@@ -1,0 +1,28 @@
+[project]
+name = "sparql-playground"
+version = "0.1.0"
+description = "JSON-LD to SPARQL Query Tool"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "click>=8.1.8",
+    "pydantic>=2.11.7",
+    "pyoxigraph>=0.4.11",
+    "python-dotenv>=1.1.1",
+    "rdflib>=7.1.4",
+    "rdflib-jsonld>=0.6.2",
+    "rich>=14.1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.uv]
+dev-dependencies = [
+    "ipython>=8.0.0",
+    "pytest>=7.0.0",
+]

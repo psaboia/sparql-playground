@@ -54,7 +54,32 @@ uv run python main.py interactive data_example/enriched_chunks_training_set_comp
 - `chunks_with_high_relevance_questions`: Find competency questions with high relevance
 - `information_needs_analysis`: Extract information needs from chunks
 - `chunk_positions`: Get text positions and offsets
-- `semantic_concepts`: Find semantic concepts linked to chunks
+- `chunk_concepts`: Find semantic concepts linked to chunks
+
+## Testing
+
+Run the comprehensive test suite that validates all queries against both engines:
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run tests with verbose output
+uv run pytest -v
+
+# Test specific engine only
+uv run pytest -k "rdflib"
+uv run pytest -k "oxigraph"
+
+# Test query consistency between engines
+uv run pytest -k "consistency"
+```
+
+The test suite includes:
+- **Query execution tests**: All 8 predefined queries × 2 engines = 16 tests
+- **Consistency validation**: Ensures both engines return same result counts  
+- **Data loading verification**: Confirms both engines load identical triple counts
+- **SPARQL syntax validation**: Checks query structure and balanced braces
 
 ## Performance Tips
 

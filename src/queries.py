@@ -95,15 +95,19 @@ EXAMPLE_QUERIES = {
         LIMIT 10
     """,
     
-    "semantic_concepts": """
-        PREFIX ex: <http://example.org/kg/>
+    "chunk_concepts": """
         PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+        PREFIX schema: <http://schema.org/>
+        PREFIX prov: <http://www.w3.org/ns/prov/>
         
-        SELECT ?chunk ?concept ?label
+        SELECT ?chunk ?text ?concept ?label ?definition ?confidence
         WHERE {
-            ?chunk ex:semantic_concepts ?concept .
-            OPTIONAL { ?concept skos:prefLabel ?label }
+            ?chunk schema:text ?text .
+            ?chunk skos:member ?concept .
+            ?concept skos:prefLabel ?label .
+            OPTIONAL { ?concept skos:definition ?definition }
+            OPTIONAL { ?concept prov:confidence ?confidence }
         }
-        LIMIT 20
+        LIMIT 10
     """,
 }

@@ -42,7 +42,7 @@ class JSONLDLoader:
         
         if self.use_oxigraph:
             with open(file_path, 'rb') as f:
-                self.store.load(f.read(), mime_type="application/ld+json")
+                self.store.load(f.read(), "application/ld+json")
             logger.info(f"Loaded into Oxigraph store. Triple count: {len(self.store)}")
         else:
             self.graph.parse(file_path, format="json-ld")
@@ -58,7 +58,10 @@ class JSONLDLoader:
         if self.use_oxigraph:
             results = []
             for row in self.store.query(sparql_query):
-                results.append({str(var): str(val) for var, val in row.items()})
+                row_dict = {}
+                for i, var in enumerate(row):
+                    row_dict[f"var_{i}"] = str(var) if var else ""
+                results.append(row_dict)
             return results
         else:
             qres = self.graph.query(sparql_query)

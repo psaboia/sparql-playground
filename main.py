@@ -134,9 +134,12 @@ def interactive(file_path, engine):
     loader.load_jsonld(file_path)
     console.print("[green]Ready for queries! Type 'help' for examples, 'exit' to quit[/green]\n")
     
+    query_buffer = []
+    
     while True:
         try:
-            query_input = console.input("[bold]SPARQL>[/bold] ")
+            prompt = "[bold]SPARQL>[/bold] " if not query_buffer else "[bold]   ...>[/bold] "
+            query_input = console.input(prompt)
             
             if query_input.lower() == 'exit':
                 break
@@ -146,31 +149,61 @@ def interactive(file_path, engine):
                 for name, q in EXAMPLE_QUERIES.items():
                     console.print(f"\n[cyan]{name}:[/cyan]")
                     console.print(Syntax(q[:200] + "..." if len(q) > 200 else q, "sparql"))
+                query_buffer = []
                 continue
             
-            if query_input.strip():
-                results = loader.query(query_input)
+            if query_input.lower() == 'clear':
+                query_buffer = []
+                console.print("[dim]Query buffer cleared[/dim]")
+                continue
+            
+            # Always add to buffer (including empty lines for formatting)
+            query_buffer.append(query_input)
+            
+            # Check if query looks complete (very basic check)
+            full_query = '\n'.join(query_buffer)
+            
+            # Simple heuristic: if it contains SELECT/ASK/CONSTRUCT/DESCRIBE and has balanced braces
+            query_keywords = ['SELECT', 'ASK', 'CONSTRUCT', 'DESCRIBE']
+            has_query_keyword = any(keyword in full_query.upper() for keyword in query_keywords)
+            
+            if has_query_keyword:
+                open_braces = full_query.count('{')
+                close_braces = full_query.count('}')
                 
-                if results:
-                    table = Table()
-                    for key in results[0].keys():
-                        table.add_column(key)
+                if open_braces > 0 and open_braces == close_braces:
+                    # Query looks complete, execute it
+                    try:
+                        # Clean up the query (remove empty lines, join properly)
+                        clean_query = ' '.join(line.strip() for line in query_buffer if line.strip())
+                        results = loader.query(clean_query)
+                        
+                        if results:
+                            table = Table()
+                            for key in results[0].keys():
+                                table.add_column(key)
+                            
+                            for row in results[:10]:
+                                values = [str(v)[:50] + "..." if len(str(v)) > 50 else str(v) 
+                                         for v in row.values()]
+                                table.add_row(*values)
+                            
+                            console.print(table)
+                            if len(results) > 10:
+                                console.print(f"[dim]Showing first 10 of {len(results)} results[/dim]")
+                        else:
+                            console.print("[yellow]No results[/yellow]")
+                            
+                    except Exception as e:
+                        console.print(f"[red]Query error: {e}[/red]")
                     
-                    for row in results[:10]:
-                        values = [str(v)[:50] + "..." if len(str(v)) > 50 else str(v) 
-                                 for v in row.values()]
-                        table.add_row(*values)
-                    
-                    console.print(table)
-                    if len(results) > 10:
-                        console.print(f"[dim]Showing first 10 of {len(results)} results[/dim]")
-                else:
-                    console.print("[yellow]No results[/yellow]")
+                    query_buffer = []  # Clear buffer after execution
                     
         except KeyboardInterrupt:
             break
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
+            query_buffer = []
     
     console.print("\n[cyan]Goodbye![/cyan]")
 

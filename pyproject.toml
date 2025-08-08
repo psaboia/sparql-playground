@@ -25,4 +25,5 @@ packages = ["src"]
 dev-dependencies = [
     "ipython>=8.0.0",
     "pytest>=7.0.0",
+    "pytest-xdist>=3.8.0",
 ]
